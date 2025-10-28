@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Bioluminescent Tech Theme */
+    --background: 207 51% 11%;
+    --foreground: 60 9% 87%;
+
+    --card: 213 35% 17%;
+    --card-foreground: 60 9% 87%;
+
+    --popover: 213 35% 17%;
+    --popover-foreground: 60 9% 87%;
+
+    --primary: 170 100% 48%;
+    --primary-foreground: 207 51% 11%;
+
+    --secondary: 268 73% 63%;
+    --secondary-foreground: 60 9% 87%;
+
+    --muted: 213 35% 17%;
+    --muted-foreground: 211 25% 57%;
+
+    --accent: 170 100% 48%;
+    --accent-foreground: 207 51% 11%;
+
+    --destructive: 18 89% 56%;
+    --destructive-foreground: 60 9% 87%;
+
+    --success: 152 100% 50%;
+
+    --border: 213 35% 25%;
+    --input: 213 35% 20%;
+    --ring: 170 100% 48%;
+
+    --radius: 0.75rem;
+
+    /* Glow effects */
+    --glow-primary: 170 100% 48%;
+    --glow-secondary: 268 73% 63%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(170, 100%, 48%), hsl(268, 73%, 63%));
+    --gradient-card: linear-gradient(180deg, hsl(213, 35%, 17%), hsl(213, 35%, 14%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px hsla(var(--glow-primary), 0.3);
+  }
+
+  .glow-secondary {
+    box-shadow: 0 0 20px hsla(var(--glow-secondary), 0.3);
+  }
+
+  .glow-hover {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-hover:hover {
+    box-shadow: 0 0 30px hsla(var(--glow-primary), 0.5);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px hsla(var(--glow-primary), 0.5);
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
