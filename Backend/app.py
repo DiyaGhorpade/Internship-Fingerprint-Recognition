@@ -10,6 +10,14 @@ import uvicorn
 import cv2
 import tensorflow as tf
 import traceback
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("Agg")  
+import base64
+from io import BytesIO
+from scipy.stats import chi2_contingency
 
 app = FastAPI(title="DactyloAI Backend API")
 
@@ -24,6 +32,7 @@ app.add_middleware(
 
 BASE_DIR = Path(__file__).resolve().parent
 models_dir = BASE_DIR / "models"
+DATA_PATH = BASE_DIR / "blood_fingerprint_FULL.csv"
 
 # ---------- LOAD SAVEDMODEL FORMAT (Cross-version compatible) ----------
 def load_savedmodel_safe(path: Path, model_name: str):
@@ -104,6 +113,9 @@ def preprocess_image_for_prediction(img_bytes: bytes, target_size: tuple) -> np.
     except Exception as e:
         print(f"❌ Image preprocessing failed: {e}")
         raise ValueError(f"Failed to preprocess image: {e}")
+
+
+
 
 # ---------- FINGERPRINT PREDICTION ----------
 @app.post("/predict/fingerprint")
@@ -221,7 +233,18 @@ async def predict_blood(file: UploadFile = File(...)):
     except Exception as e:
         print(f"💥 Blood prediction error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+# ---------------------- ANALYTICS API ----------------------
+from fastapi.staticfiles import StaticFiles
+from services.analytics_engine import run_analytics
 
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/analytics")
+def analytics():
+    return run_analytics()
+
+     
 # ---------- HEALTH CHECK ----------
 @app.get("/")
 async def health_check():
