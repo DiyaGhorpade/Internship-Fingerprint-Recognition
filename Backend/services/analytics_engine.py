@@ -110,8 +110,71 @@ def run_analytics():
     plt.tight_layout()
     percent_heatmap_path = save_plot(fig, "percent_heatmap.png")
 
+    # Probability Distribution Histograms
+    prob_cols = ["p_arc", "p_whorl", "p_loop"]  # lowercase after normalization
+    prob_cols_exist = [col for col in prob_cols if col in df.columns]
+    
+    print(f"Available columns: {df.columns.tolist()}")
+    print(f"Looking for: {prob_cols}")
+    print(f"Found: {prob_cols_exist}")
+    
+    if prob_cols_exist:
+        fig, axes = plt.subplots(1, len(prob_cols_exist), figsize=(12, 4), dpi=150)
+        if len(prob_cols_exist) == 1:
+            axes = [axes]
+        
+        for i, col in enumerate(prob_cols_exist):
+            data = df[col].dropna()
+            print(f"{col}: {len(data)} values, range [{data.min():.3f}, {data.max():.3f}]")
+            axes[i].hist(data, bins=20, color="steelblue", edgecolor="black", alpha=0.7)
+            axes[i].set_title(col.upper(), fontsize=11, fontweight='bold')
+            axes[i].set_xlabel("Probability", fontsize=9)
+            axes[i].set_ylabel("Frequency", fontsize=9)
+            axes[i].grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        prob_dist_path = save_plot(fig, "probability_distribution.png")
+    else:
+        print("WARNING: No probability columns found!")
+        prob_dist_path = None
+ 
+    # Log Odds Ratio Heatmap
+    # Calculate log odds ratio: log(observed / (total - observed))
+    total = ct.sum().sum()
 
+    log_odds = pd.DataFrame(index=ct.index, columns=ct.columns)
+    print("\nLog Odds Ratios:")
+    for fp in ct.index:
+        for bg in ct.columns:
+            observed = ct.loc[fp, bg]
+            other = total - observed
+            
+            if other != 0 and observed > 0:
+                odds = observed / other
+                log_odds.loc[fp, bg] = np.log(odds)
+                print(f"{fp} vs {bg}: {log_odds.loc[fp, bg]:.4f}")
+            else:
+                log_odds.loc[fp, bg] = np.nan
+                print(f"{fp} vs {bg}: NaN")
+    log_odds = log_odds.astype(float)
 
+    fig = plt.figure(figsize=(8, 6), dpi=150)
+    sns.heatmap(
+        log_odds,
+        annot=True,
+        fmt=".3f",
+        cmap="RdBu_r",
+        center=0,
+        cbar_kws={'label': 'Log Odds Ratio'},
+        linewidths=0.5,
+        linecolor='gray'
+    )
+    plt.title("Log Odds Ratio: Fingerprint vs Blood Group", fontsize=14, fontweight='bold')
+    plt.xlabel("Blood Group", fontsize=12)
+    plt.ylabel("Fingerprint Type", fontsize=12)
+    plt.xticks(rotation=30, ha="right")
+    plt.tight_layout()
+    log_odds_path = save_plot(fig, "log_odds.png")
 
     ### 🧠 Correlation Heatmap (Encoded Labels)
     df_enc = df.copy()
@@ -150,7 +213,6 @@ def run_analytics():
     ### ✅ RETURN CLEAN OUTPUT ###
     return {
         "tables": {
-            "frequency": ct.to_dict(),
             "expected": expected_df.to_dict(),
             "chi_square": {"chi2": float(chi2), "p": float(p), "dof": int(dof)},
             "residuals": residuals_df.to_dict(),
@@ -164,6 +226,7 @@ def run_analytics():
             "residuals": residuals_path,
             "correlation_encoded": corr2_path,
             "pattern_distribution": pattern_dist_path,
-
+            "probability_distribution":prob_dist_path,
+            "log_odds":log_odds_path
         }
     }

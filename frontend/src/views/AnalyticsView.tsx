@@ -10,51 +10,72 @@ export default function AnalyticsView() {
       .catch((err) => console.error("Analytics API error:", err));
   }, []);
 
-  if (!data) return <p className="text-white text-center mt-6">Loading analytics...</p>;
+  if (!data) return (
+    <p className="text-white text-center mt-6 text-lg animate-pulse">
+      Loading analytics...
+    </p>
+  );
 
-  const plotCard = (title: string, filename: string | null) => (
-    <div className="p-3 bg-[#06121F] border border-gray-700 rounded-lg shadow-md">
-      <h3 className="font-semibold mb-2 text-white">{title}</h3>
-      {filename ? (
-        <img
-          src={`http://localhost:8000/${filename.replace(/\\/g, "/")}`}
-          alt={title}
-          className="rounded border border-gray-600 max-w-full"
-        />
-      ) : (
-        <p className="text-gray-400 text-sm">Not generated</p>
-      )}
+  // 🧠 Insight placeholders — fill later
+  const insights: Record<string, string> = {
+    probability_distribution: "1.)Arc and Loop: The model is very unconfident when predicting these classes. The probability scores are almost always low.\n2.Whorl:The model's confidence is more varied, showing it can sometimes make high-confidence predictions for this class, unlike the other two.",
+    pattern_distribution: "Frequency of each fingerprint type in the dataset.",
+    heatmap: "Raw counts showing how fingerprint types map to blood groups.",
+    percent_heatmap: "Percent distribution — helps compare across blood groups.",
+    barplot: "Bar chart showing fingerprint count across each blood group.",
+    mosaic: "Visual proportion of fingerprint types vs blood groups.",
+    residuals: "Standardized residuals — deviation from expected counts under independence assumption.",
+    correlation_encoded: "Correlation between encoded labels — directional but weak signal expected.",
+    log_odds: "Log-Odds values from statistical model — indicates strength/direction of association.",
+  };
+
+  const plotCard = (title: string, filename: string | null, insightKey: string) => (
+    <div className="bg-[#06121F] border border-gray-700 rounded-lg shadow-lg p-4 flex gap-5">
+      
+      {/* Chart */}
+      <div className="w-1/2">
+        <h3 className="font-semibold mb-2 text-white text-sm">{title}</h3>
+        {filename ? (
+          <img
+            src={`http://localhost:8000/${filename.replace(/\\/g, "/")}`}
+            alt={title}
+            className="rounded border border-gray-600 w-full max-h-72 object-contain"
+          />
+        ) : (
+          <p className="text-gray-400 text-sm">Not generated</p>
+        )}
+      </div>
+
+      {/* Insight Box */}
+      <div className="w-1/2 bg-[#0B1929] border border-gray-700 rounded-lg p-3">
+        <h4 className="text-sm font-bold text-yellow-300 mb-1">Insight</h4>
+        <p className="text-gray-300 text-xs leading-relaxed italic">
+          {insights[insightKey]}
+        </p>
+      </div>
     </div>
   );
 
   return (
     <div className="p-6 text-white">
-      <h2 className="text-2xl font-bold mb-6">Fingerprint ↔ Blood Group Analytics</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Fingerprint ↔ Blood Group Analytics</h2>
 
-      {/* Frequency Table */}
-      <h3 className="text-xl font-semibold mb-3 text-cyan-300">Frequency Table</h3>
-      <pre className="bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto border border-gray-700">
-        {JSON.stringify(data.tables.frequency, null, 2)}
-      </pre>
+      {/* All Plots */}
+      <div className="grid grid-cols-1 gap-6">
 
-      {/* Plot Grid */}
-      <div className="grid grid-cols-2 gap-6 mt-6">
-
-        {plotCard("Heatmap", data.plots.heatmap)}
-        {plotCard("% Heatmap", data.plots.percent_heatmap)}
-
-        {plotCard("Bar Chart", data.plots.barplot)}
-        {plotCard("Mosaic Plot", data.plots.mosaic)}
-
-        {plotCard("Residual Heatmap", data.plots.residuals)}
-
-        {plotCard("Correlation (Encoded Labels)", data.plots.correlation_encoded)}
-        {plotCard("Fingerprint Distribution", data.plots.pattern_distribution)}
-
+        {plotCard("Probability Distribution", data.plots.probability_distribution, "probability_distribution")}
+        {plotCard("Fingerprint Pattern Distribution", data.plots.pattern_distribution, "pattern_distribution")}
+        {plotCard("Heatmap", data.plots.heatmap, "heatmap")}
+        {plotCard("% Heatmap", data.plots.percent_heatmap, "percent_heatmap")}
+        {plotCard("Bar Chart", data.plots.barplot, "barplot")}
+        {plotCard("Mosaic Plot", data.plots.mosaic, "mosaic")}
+        {plotCard("Residual Heatmap", data.plots.residuals, "residuals")}
+        {plotCard("Correlation (Encoded Labels)", data.plots.correlation_encoded, "correlation_encoded")}
+        {plotCard("Log-Odds Ratio", data.plots.log_odds, "log_odds")}
 
       </div>
 
-      {/* Chi Square */}
+      {/* Chi-Square Summary */}
       <div className="mt-8 p-4 bg-[#0A1A2B] rounded-lg border border-gray-700">
         <h3 className="text-lg font-bold text-yellow-300 mb-2">Chi-Square Test</h3>
         <p><b>Chi-Square:</b> {data.tables.chi_square.chi2.toFixed(4)}</p>
