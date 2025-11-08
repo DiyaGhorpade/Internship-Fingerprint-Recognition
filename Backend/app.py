@@ -231,7 +231,7 @@ async def predict_blood(file: UploadFile = File(...)):
         }
 
     except Exception as e:
-        print(f"💥 Blood prediction error: {e}")
+        print(f"💥 Blood prediction erro+r: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 # ---------------------- ANALYTICS API ----------------------
 from fastapi.staticfiles import StaticFiles
